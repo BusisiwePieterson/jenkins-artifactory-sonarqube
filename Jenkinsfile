@@ -5,6 +5,7 @@ def COLOR_MAP = [
 
 pipeline {
     agent any
+    
     tools {
        maven "MAVEN3" 
        jdk "OracleJDK8"
@@ -104,5 +105,4 @@ pipeline {
                 message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
             }
     }  
-}
 }
