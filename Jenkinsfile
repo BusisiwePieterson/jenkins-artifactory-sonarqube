@@ -85,7 +85,7 @@ pipeline {
                     artifacts: [
                         [artifactId: 'raffinata',
                         classifier: '',
-                        file: 'target/vprofie-v2.war',
+                        file: 'target/vprofile-v2.war',
                         type: 'war']
                     ]
                 )
