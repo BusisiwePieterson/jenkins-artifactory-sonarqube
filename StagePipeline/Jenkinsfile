@@ -110,7 +110,7 @@ pipeline {
 
         stage("UploadApp Image") {
             steps {
-                scripts {
+                script {
                     docker.withRegistry( vprofileRegistry, registryCredential ) {
                         dockerImage.push("$BUILD_NUMBER")
                         dockerImage.push('latest')
@@ -127,5 +127,4 @@ pipeline {
                         message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
                 }
             }
-
 }
