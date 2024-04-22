@@ -23,6 +23,9 @@ pipeline {
        NEXUS_LOGIN = 'nexuslogin' 
        SONARSERVER = 'sonarserver'
        SONARSCANNER = 'sonarscanner'
+       registryCredential = 'ecr:us-east-1:awscreds'
+       appRegistry = '905417996313.dkr.ecr.us-east-1.amazonaws.com/raffinata'
+       vprofileRegistry = 'https://905417996313.dkr.ecr.us-east-1.amazonaws.com'
     }
 
 
@@ -97,6 +100,27 @@ pipeline {
                 )
             }
         }
+
+           stage("Build App Image"){
+            steps {
+                script {
+                    dockerImage = docker.build( appRegistry + ":$BUILD_NUMBER", "./Docker/app/multistage/")
+                }
+            }
+        }
+
+           stage("UploadApp Image") {
+            steps {
+                script {
+                    docker.withRegistry( vprofileRegistry, registryCredential ) {
+                        dockerImage.push("$BUILD_NUMBER")
+                        dockerImage.push('latest')
+                    }
+                }
+            }
+        }
+    }
+
 
     }
 
