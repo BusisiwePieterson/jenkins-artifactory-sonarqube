@@ -26,6 +26,8 @@ pipeline {
        registryCredential = 'ecr:us-east-1:awscred'
        appRegistry = '905417996313.dkr.ecr.us-east-1.amazonaws.com/raffinata'
        vprofileRegistry = 'https://905417996313.dkr.ecr.us-east-1.amazonaws.com'
+       cluster = "raffinata-new"
+       service = "raffinatastagesvc"
     }
 
 
@@ -119,6 +121,13 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy to ECS staging')
+            steps {
+                withAWS(credentials: 'awscred', region: 'us-east-1'){
+                    sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
+                }
+            }
     }
             post {
                 always {
