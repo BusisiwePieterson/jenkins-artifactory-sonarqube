@@ -122,7 +122,14 @@ pipeline {
             }
         }
 
-   
+        stage('Deploy to ECS staging') {
+            steps {
+                withAWS(credentials: 'awscred', region: 'us-east-1') {
+                    sh 'aws ecs update-service --cluster raffinata-new --service raffinatastagesvc --force-new-deployment'
+                } 
+            }
+        }
+    }
             post {
                 always {
                     echo 'Slack Notifications.'
