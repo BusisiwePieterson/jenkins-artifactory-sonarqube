@@ -197,20 +197,22 @@ Open the GitHub repository that you cloned earlier and create a file named `Jenk
 In the Jenkinsfile, we'll define a stage for the build process. Within this stage, we'll have steps, which will include a Maven command. Here's an overview of the Maven command:
 
 ```
-mvn -s settings.xml -DskipTests install
+mvn '-s settings.xml -DskipTests install'
 
 ```
 
 Explanation of the command:
 
 - `mvn`: This is the Maven command.
-- `s settings.xml`: This specifies the settings file to be used by Maven. We'll define settings in a settings.xml file.
-- `DskipTests`: This parameter tells Maven to skip running tests during the build.
+- `-s settings.xml`: This specifies the settings file to be used by Maven. We'll define settings in a settings.xml file.
+- `-DskipTests`: This parameter tells Maven to skip running tests during the build.
 - `install`: This command instructs Maven to build and install the project into the local repository, skipping tests.
 
 ![images](images/Screenshot_117.png)
 
 Just before the stages section in the `Jenkinsfile`, add an `environment` block where you'll define all the variables used in the `settings.xml` and `pom.xml` files. This will ensure that these variables are accessible throughout the pipeline.
+
+Next, commit your code to Github
 
 ![images](images/Screenshot_26.png)
 
