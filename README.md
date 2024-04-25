@@ -30,7 +30,7 @@ By adopting automated processes, developers can focus on writing code while ensu
 
 By integrating these tools into our CI/CD pipeline, we can automate the entire software delivery process from code commit to deployment, ensuring rapid and reliable delivery of high-quality software.
 
-## Phase 1: Continous Intergration
+## Phase 1: Continous Intergration(CI)
 
 The first phase of this project involves implementing a Continuous Integration (CI) process using Jenkins. Subsequently, we will proceed to Continuous Delivery (CD).
 
@@ -212,107 +212,201 @@ Explanation of the command:
 
 Just before the stages section in the `Jenkinsfile`, add an `environment` block where you'll define all the variables used in the `settings.xml` and `pom.xml` files. This will ensure that these variables are accessible throughout the pipeline.
 
-Next, commit your code to Github
 
 ![images](images/Screenshot_26.png)
 
+Next, commit your code to Github
+
+![images](images/Screenshot_118.png)
+
+
+Let's head back to Jenkins to create the job. Here's what we'll do:
+
+- Navigate to Jenkins.
+- Click on "New Item" to create a new job.
+- Give the job a name, such as "profile-ci-pipeline".
+- Select the "Pipeline" option.
+- Click "OK" to create the job.
+
 ![images](images/Screenshot_27.png)
+
+Next, let's add credentials for authentication with GitHub. Jenkins requires the GitHub SSH private key for authentication. You can generate this SSH key pair following instructions from the video [here](https://www.youtube.com/watch?v=X40b9x9BFGo). Once you've generated the SSH key pair, copy the private key. We'll use it to configure Jenkins for authentication with GitHub.
+
 
 ![images](images/Screenshot_28.png)
 
-![images](images/Screenshot_29.png)
+
+In the pipeline configuration, select "Pipeline script from SCM".
+Choose "Git" as the SCM.
+Enter the repository URL of your GitHub repository.
+
+Next, under the "Credentials" section in Jenkins, select "Add". Then, under "Kind", choose "SSH username with private key". Click on "Private key" and select "Enter directly". Finally, paste your private key into the provided field. This will configure Jenkins to use the SSH private key for authentication with GitHub.
+
 
 ![images](images/Screenshot_30.png)
 
+![images](images/Screenshot_29.png)
+
+To resolve the error, switch to the root user using `sudo -i`, then switch to the Jenkins user using `su - jenkins`. Next, Jenkins user should run the SSH command, replacing the URL with your GitHub account. After entering the command, press enter and type "yes" when prompted. This action stores GitHub's identity within the Jenkins user.
+
 ![images](images/Screenshot_31.png)
+
+Under "Branches to build", remove `/master` and enter `/main`, as this is the branch we are currently using.
 
 ![images](images/Screenshot_32.png)
 
+Start the build process and keep an eye on the loading bar to monitor progress. Notice that dependencies are being downloaded from Nexus, which in turn retrieves them from the Maven repository. Once the process completes, you'll see that the build has finished successfully. If the build fails, double-check your variable names.
+
 ![images](images/Screenshot_33.png)
 
-![images](images/Screenshot_34.png)
 
-## GITHUB WEBHOOK
+### GITHUB WEBHOOK
+
+Whenever you make a commit, the pipeline should trigger automatically. We will now create a Webhook t achieve this.
 
 ![images](images/Screenshot_35.png)
 
+Next we go back to Jenkins, navigate to your Jenkins job, then click on "Configure". Enable the option "GitHub hook trigger for GIT SCM polling" by checking the box. Finally, save your changes.
+
 ![images](images/Screenshot_36.png)
 
-![images](images/Screenshot_37.png)
+Return to the Jenkinsfile and add a post-installation step to the Build stage. Utilize the `archiveArtifacts` plugin, which is already installed. This step should archive anything that ends with `.war`, as this is the extension of our artifact.
+
+![images](images/Screenshot_119.png)
+
+The next stages we'll add are "Test" for our unit tests and "Checkstyle Analysis" to check for any issues with our code. We Commit the code and initiate a build.
+
+![images](images/Screenshot_120.png)
 
 ![images](images/Screenshot_38.png)
 
-![images](images/Screenshot_40.png)
+### Code Analysis with SonarQube
 
-![images](images/Screenshot_41.png)
+In our pipeline, we have several stages: **build**, **test**, and **Checkstyle analysis**. The build stage creates the artifact, the test stage runs unit tests and generates reports, and the Checkstyle analysis stage checks for code issues and generates reports. 
+
+To view these reports, we navigate to the workspace of the Jenkins job and find the checkstyle result and reports. These reports aren't human-readable, so we'll use SonarQube server to present the results in a human readable format.
+
+##
+
+First we will set up the `SonarScanner Tool` then store the SonarQube server information in Jenkins. Scroll down to the Sonar section and click "Add SonarQube." Check the box and name it "sonarserver" or any name you choose then enter the SonarQube URL as `<http://private-IP-of-SonarQube-server>`
 
 ![images](images/Screenshot_42.png)
 
-![images](images/Screenshot_43.png)
+Next, let's add our SonarQube credentials. However, for Jenkins to communicate with SonarQube, we need to create a token for SonarQube and add that token in Jenkins. This token acts as a form of authentication between Jenkins and SonarQube.
 
+![images](images/Screenshot_40.png)
+
+Once you've generated the token, you can add it to Jenkins as part of the SonarQube credentials.
+
+![images](images/Screenshot_41.png)
+
+To help identify code quality issues, bugs, and vulnerabilities, we will now create the "Sonar Analysis" job. Commit the code and build the job again.
+
+![images](images/Screenshot_122.png)
+
+You'll notice that the job passes the quality gate. SonarQube has its own default quality gate, which is why it passed despite the existence of bugs and vulnerabilities in the code.
+
+![images](images/Screenshot_43.png)
 ![images](images/Screenshot_44.png)
+
+Because we do not want to use the default quality gate, we will create our own quality gate with our own rules. We give our quality gate a name.
 
 ![images](images/Screenshot_45.png)
 
+Below, you can see that we set the condition: if there are more than 25 bugs, then we want our quality gate to fail.
+
 ![images](images/Screenshot_46.png)
 
-
+Just as GitHub sends a webhooks to Jenkins, we need a webhook for SonarQube. Jenkins needs a SonarQube webhook to receive notifications from SonarQube regarding the analysis results of the code.
 
 ![images](images/Screenshot_47.png)
-
 ![images](images/Screenshot_48.png)
-
 ![images](images/Screenshot_49.png)
-
 ![images](images/Screenshot_50.png)
 
+We will now add one more stage to our pipeline. Just after the analysis stage, we have the "Quality Gate" stage. Set a timeout of one hour for this stage. If SonarQube does not respond within this time, the pipeline will abort. Save and commit the changes to your Jenkinsfile, then initiate the build.
+
+![images](images/Screenshot_123.png)
+
+When you initiate the build, you will notice that it fails due to the quality gate failure. This indicates that our quality gate is functioning correctly. Recall that we configured the condition that if there are more than 25 bugs, the quality gate should fail.
+
 ![images](images/Screenshot_51.png)
+
+Go back to your quality gate and change the condition to 100. Then initiate the build again. Now you will observe that the build passes because the quality gate has passed.
 
 ![images](images/Screenshot_52.png)
 
 ![images](images/Screenshot_53.png)
 
+### Publish to Nexus
+
+In our pipeline code, we archive the artifact for upload to a repository. Once archived, you'll see the last successful artifact. You can also find it in the workspace. To upload it to the Nexus repository, we need to rename it with a timestamp. Each time we upload a new artifact it will have a different version number. 
+
+For this, we installed the Build Timestamp plugin. Set its value in "Manage Jenkins" > "Configure System."
+
 ![images](images/Screenshot_54.png)
 
+We need to upload the artifacts to Nexus. Search for the plugin on Google, take the code, paste it in the Jenkinsfile, and modify it to suit your needs.
+
 ![images](images/Screenshot_55.png)
-
 ![images](images/Screenshot_56.png)
-
 ![images](images/Screenshot_57.png)
+
+![images](images/Screenshot_124.png)
+
+Now initiate the build again, you will see the Nexus url repository, when you go to Nexus you will be able to see the artifact with the timestamp.
 
 ![images](images/Screenshot_58.png)
 
-![images](images/Screenshot_59.png)
+You can use the link to download the artifact if you need it.
 
 ![images](images/Screenshot_60.png)
 
+### Slack for Notifications
+
+At the moment, we are manually checking Jenkins to know whether the build has passed or failed. However, we can set up a notification system so we don't even need to check Jenkins for the build status. Instead, we'll receive notifications indicating whether the build has passed or failed. Based on the result, we can take the next action or step accordingly. In this project we will be using Slack for notifications.
+
+Go to the Slack website (https://slack.com/get-started) to create a Slack workspace. Use the pictures below as a guide.
+
 ![images](images/Screenshot_61.png)
-
 ![images](images/Screenshot_62.png)
-
 ![images](images/Screenshot_63.png)
-
 ![images](images/Screenshot_64.png)
-
 ![images](images/Screenshot_65.png)
-
 ![images](images/Screenshot_66.png)
-
 ![images](images/Screenshot_67.png)
-
 ![images](images/Screenshot_68.png)
-
 ![images](images/Screenshot_69.png)
+
+Jenkins will need this token to intergrate with Slack
 
 ![images](images/Screenshot_70.png)
 
+Create Slack credentials and add the token there.
+
 ![images](images/Screenshot_71.png)
+
+To test the connection between Jenkins and Slack, you can initiate a test notification from Jenkins to Slack. This will confirm whether the integration is working correctly.
 
 ![images](images/Screenshot_72.png)
 
-![images](images/Screenshot_73.png)
 
-![images](images/Screenshot_74.png)
+At the top of the pipeline, we define a color map. If the argument parsed is "success," it returns "good." In Jenkins, "good" corresponds to the color green, while "danger" represents red. We dynamically parse these color codes in Slack based on whether the build succeeded or failed. If the current result is success, we send the "good" color code; otherwise, we send "danger."
+
+![images](images/Screenshot_126.png)
+
+With Slack setup we need to add a post stage in our Jenkinsfile, we will write that at the bottom of the pipeline.
+
+![images](images/Screenshot_125.png)
+
+To test this, we run our pipeline again. You'll see the status of the pipeline on Slack, meaning Slack has sent a notification.
+
+## Phase 2: Continous Delivery(CD)
+
+![images](images/Continous%20Delivery%20of%20Java%20Web%20Application.png)
+
+First we log in to our AWS console and create an IAM user, then create an ECR repository. The IAM user will have permissions for `AmazonEC2ContainerRegistryFullAccess` and `AmazonECS_FullAccess`
+
 
 ![images](images/Screenshot_75.png)
 
@@ -322,11 +416,12 @@ Next, commit your code to Github
 
 ![images](images/Screenshot_78.png)
 
+
 ![images](images/Screenshot_79.png)
+
 
 ![images](images/Screenshot_80.png)
 
-![images](images/Continous%20Delivery%20of%20Java%20Web%20Application.png)
 
 ![images](images/Screenshot_81.png)
 
