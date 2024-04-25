@@ -391,6 +391,8 @@ To test the connection between Jenkins and Slack, you can initiate a test notifi
 ![images](images/Screenshot_72.png)
 
 
+
+
 At the top of the pipeline, we define a color map. If the argument parsed is "success," it returns "good." In Jenkins, "good" corresponds to the color green, while "danger" represents red. We dynamically parse these color codes in Slack based on whether the build succeeded or failed. If the current result is success, we send the "good" color code; otherwise, we send "danger."
 
 ![images](images/Screenshot_126.png)
@@ -401,24 +403,45 @@ With Slack setup we need to add a post stage in our Jenkinsfile, we will write t
 
 To test this, we run our pipeline again. You'll see the status of the pipeline on Slack, meaning Slack has sent a notification.
 
+![images](images/Screenshot_73.png)
+
 ## Phase 2: Continous Delivery(CD)
 
+Now that we have our artifacts, it it time for us to deploy our application.Ensure that the pipeline works because we'll be extending it from continuous integration to continuous delivery. Below is an architectural diagram of what we are trying to achieve.
+
 ![images](images/Continous%20Delivery%20of%20Java%20Web%20Application.png)
+
+##
+
 
 First we log in to our AWS console and create an IAM user, then create an ECR repository. The IAM user will have permissions for `AmazonEC2ContainerRegistryFullAccess` and `AmazonECS_FullAccess`
 
 
 ![images](images/Screenshot_75.png)
 
-![images](images/Screenshot_76.png)
+Next, we create a Docker repository, we will use Amazon's Elastic Container Registry to store our docker image.
 
-![images](images/Screenshot_77.png)
+![images](images/Screenshot_76.png)
+![images](images/Screenshot_81.png)
+
+Next let's install the necessary plugins
+
+![images](images/Screenshot_89.png)
+
+
+After installing the plugins we need to store the AWS credentials in Jenkins.
+
+Go to Jenkins global credentials and click on "Add Credentials." In the "Kind" dropdown, you should see "AWS Credentials" since the plugin was installed. Select that and give it a name, for example, "creds." In the "ID" and "Description," you can use the same name. Then, enter the access key and secret key. Once you have entered the keys, click "OK" to save the credentials
 
 ![images](images/Screenshot_78.png)
 
+Next we need to to install the Docker engine on the Jenkins server.SSH into your Jenkins server. 
+
+First switch to root user `sudo -i` then run `apt update && apt install awscli -y`
 
 ![images](images/Screenshot_79.png)
 
+Next, go to Google and search for "Docker installation," then follow the instructions for installing Docker on your specific operating system.
 
 ![images](images/Screenshot_80.png)
 
