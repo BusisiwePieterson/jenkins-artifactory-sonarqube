@@ -278,7 +278,7 @@ The next stages we'll add are "Test" for our unit tests and "Checkstyle Analysis
 
 ![images](images/Screenshot_120.png)
 
-![images](images/Screenshot_38.png)
+![images](images/Screenshot_83.png)
 
 ### Code Analysis with SonarQube
 
@@ -431,7 +431,11 @@ Next let's install the necessary plugins
 
 After installing the plugins we need to store the AWS credentials in Jenkins.
 
-Go to Jenkins global credentials and click on "Add Credentials." In the "Kind" dropdown, you should see "AWS Credentials" since the plugin was installed. Select that and give it a name, for example, "creds." In the "ID" and "Description," you can use the same name. Then, enter the access key and secret key. Once you have entered the keys, click "OK" to save the credentials
+Go to Jenkins global credentials and click on "Add Credentials." In the "Kind" dropdown, you should see "AWS Credentials" since the plugin was installed. Select that and give it a name, for example, "creds." In the "ID" and "Description," you can use the same name. Then, enter the access key and secret key. Once you have entered the keys, click "OK" to save the credentials.
+
+Go to your command line and navigate to the directory where you stored your AWS credentials.
+
+![images](images/Screenshot_90.png)
 
 ![images](images/Screenshot_78.png)
 
@@ -445,66 +449,57 @@ Next, go to Google and search for "Docker installation," then follow the instruc
 
 ![images](images/Screenshot_80.png)
 
-
-![images](images/Screenshot_81.png)
-
-![images](images/Screenshot_82.png)
-
-![images](images/Screenshot_83.png)
-
-![images](images/Screenshot_84.png)
-
-![images](images/Screenshot_85.png)
-
-![images](images/Screenshot_86.png)
-
-![images](images/Screenshot_87.png)
-
-![images](images/Screenshot_88.png)
-
-![images](images/Screenshot_89.png)
-
-![images](images/Screenshot_90.png)
-
-
-
-![images](images/Screenshot_92.png)
+To run Docker commands, users must be part of the Docker group or have root privileges.  I'll switch to the Jenkins user and try running docker images, resulting in a permission denied error. To fix this, we add the Jenkins user to the Docker group using `sudo usermod -aG docker jenkins`. Now, you should be able to run Docker commands smoothly. 
 
 ![images](images/Screenshot_93.png)
 
+We're now ready to create the code to build the Docker image and upload it to Amazon ECR. Create a Dockerfile `mkdir Dockerfile`
+
 ![images](images/Screenshot_94.png)
+
+Alright, let's set up the variables we'll be using in our pipeline code:
+
+- **Registry Credential**: This variable holds the aws credentials name which we created in Jenkins, this is for accessing the ECR registry.
+- **App Registry**: This is the image name, which the URI
+
+- **vprofileRegistry**: This variable represents the repository, this will be the URL of the repository.
+
+
+![images](images/Screenshot_127.png)
+
+Alright, let's proceed with writing the pipeline code in the Jenkinsfile. We need to define a stage where we'll build the Docker image and push it to Amazon ECR (Elastic Container Registry). This stage will include the necessary steps to build the Docker image using the Dockerfile we just reviewed and then push it to ECR. 
 
 ![images](images/Screenshot_95.png)
 
+Now we will create a new pipeline for CICD, switch the branch to cicd branch and build the job in the new pipeline.
+
 ![images](images/Screenshot_96.png)
+
+![images](images/Screenshot_99.png)
+
+After running the build on the new branch you should see the image has been pushed to ECR, now this image can be deployed.
+
+![images](images/Screenshot_100.png)
+
+Now our image is ready to be deployed, in this project we will be deploying the image on ECS cluster.
+
+![images](images/Screenshot_113.png)
+
+ECS will create a cluster, load balancer, and CloudWatch Logs etc.
+
+![images](images/Screenshot_109.png)
+
+Copy the Loadbalancer DNS name and open it in a new browser.
+
+![images](images/Screenshot_110.png)
+
+Now our application has been successfully deployed on ECS!!!
+
+![images](images/Screenshot_111.png)
+
+
+### Challenges I faced in the project
 
 ![images](images/Screenshot_97.png)
 
 ![images](images/Screenshot_98.png)
-
-![images](images/Screenshot_99.png)
-KKKKKKKKKKKKKKKKK
-
-![images](images/Screenshot_100.png)
-
-![images](images/Screenshot_103.png)
-
-![images](images/Screenshot_104.png)
-
-![images](images/Screenshot_105.png)
-
-![images](images/Screenshot_106.png)
-
-![images](images/Screenshot_107.png)
-
-![images](images/Screenshot_108.png)
-
-![images](images/Screenshot_109.png)
-
-![images](images/Screenshot_110.png)
-
-![images](images/Screenshot_111.png)
-
-![images](images/Screenshot_112.png)
-
-![images](images/Screenshot_113.png)
