@@ -25,7 +25,7 @@ pipeline {
        SONARSCANNER = 'sonarscanner'
        registryCredential = 'ecr:us-east-1:awscred'
        appRegistry = '905417996313.dkr.ecr.us-east-1.amazonaws.com/raffinata'
-       vprofileRegistry = 'https://905417996313.dkr.ecr.us-east-1.amazonaws.com'
+       vprofileRegistry = 'https://905417996313.dkr.ecr.us-east-1.amazonaws.com/raffinata'
        cluster = "raffinata-new"
        service = "raffinatastagesvc" 
     }
