@@ -498,8 +498,3 @@ Now our application has been successfully deployed on ECS!!!
 ![images](images/Screenshot_111.png)
 
 
-### Challenges I faced in the project
-
-![images](images/Screenshot_97.png)
-
-![images](images/Screenshot_98.png)
